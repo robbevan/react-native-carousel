@@ -125,6 +125,9 @@ var Carousel = React.createClass({
 
   _onAnimationBegin() {
      this.clearTimeout(this.timer);
+     if (this.props.onBeginPageChange) {
+       this.props.onBeginPageChange();
+     }
   },
 
   _onAnimationEnd(activePage) {
@@ -141,7 +144,7 @@ var Carousel = React.createClass({
           ref="pager"
           width={this.getWidth()}
           contentContainerStyle={styles.container}
-          onBegin={this._onAnimationBeginPage}
+          onBegin={this._onAnimationBegin}
           onEnd={this._onAnimationEnd}
         >
           {this.props.children}

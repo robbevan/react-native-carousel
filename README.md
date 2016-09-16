@@ -15,6 +15,7 @@ indicatorSpace={15} // space between each indicator
 inactiveIndicatorColor="#999999" // Inactive indicator color
 indicatorAtBottom={true} // Set to false to show the indicators at the top
 indicatorOffset={250} // Indicator relative position from top or bottom
+onBeginPageChange={callback} // Called before the active page changes
 onPageChange={callback} // Called when the active page changes
 inactiveIndicatorText= '•' // Inactive indicator content ( You can customize to use any Unicode character )
 indicatorText= '•' // Active indicator content ( You can customize to use any Unicode character )
@@ -22,7 +23,7 @@ indicatorText= '•' // Active indicator content ( You can customize to use any 
 animate={true} // Enable carousel autoplay
 delay={1000} // Set Animation delay between slides
 loop={true} // Allow infinite looped animation. Depends on Prop {...animate} set to true.
- 
+
 ```
 
 ### Usage example
