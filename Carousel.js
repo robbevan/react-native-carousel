@@ -5,31 +5,39 @@ var {
   Dimensions,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } = require('react-native');
 
 var TimerMixin = require('react-timer-mixin');
 var CarouselPager = require('./CarouselPager');
 
+var styles = require('./styles');
+
 var Carousel = React.createClass({
   mixins: [TimerMixin],
 
   getDefaultProps() {
     return {
-      hideIndicators: false,
-      indicatorColor: '#000000',
-      indicatorSize: 50,
-      inactiveIndicatorColor: '#999999',
-      indicatorAtBottom: true,
-      indicatorOffset: 250,
-      indicatorText: '•',
-      inactiveIndicatorText: '•',
-      width: null,
-      initialPage: 0,
-      indicatorSpace: 25,
       animate: true,
       delay: 1000,
       loop: true,
+      initialPage: 0,
+      hideIndicators: false,
+      indicatorAtBottom: true,
+      indicatorOffset: 250,
+      indicatorSpace: 25,
+      indicatorStyle: styles.defaultIndicator,
+      inactiveIndicatorStyle: styles.defaultInactiveIndicator,
+      indicatorText: '•',
+      inactiveIndicatorText: '•',
+      arrowsAtBottom: false,
+      arrowsVerticalOffset: 50,
+      arrowsHorizontalOffset: 0,
+      arrowStyle: styles.defaultArrow,
+      leftArrow: '〈',
+      rightArrow: '〉',
+      width: null,
     };
   },
 
@@ -53,27 +61,33 @@ var Carousel = React.createClass({
     }
 
     if (this.props.animate && this.props.children){
-        this._setUpTimer();
+      this._setUpTimer();
     }
   },
 
-  indicatorPressed(activePage) {
+  scrollTo(activePage) {
     this.setState({activePage});
     this.refs.pager.scrollToPage(activePage);
   },
 
+  wrapArrow(arrow) {
+    if (typeof arrow === 'string') {
+      return <Text style={[styles.defaultArrow, this.props.arrowStyle]}>{arrow} </Text>;
+    } else {
+      return arrow;
+    }
+  },
+
   renderPageIndicator() {
-    if (this.props.hideIndicators === true) {
+    if ((this.props.hideIndicators === true) || (this.props.children.length < 2)) {
       return null;
     }
 
     var indicators = [],
-        indicatorStyle = this.props.indicatorAtBottom ? { bottom: this.props.indicatorOffset } : { top: this.props.indicatorOffset },
-        style, position;
+      indicatorStyle = this.props.indicatorAtBottom ? { bottom: this.props.indicatorOffset } : { top: this.props.indicatorOffset },
+      style, position;
 
-    position = {
-      width: this.props.children.length * this.props.indicatorSpace,
-    };
+    position = { width: this.props.children.length * this.props.indicatorSpace, };
     position.left = (this.getWidth() - position.width) / 2;
 
     for (var i = 0, l = this.props.children.length; i < l; i++) {
@@ -81,15 +95,17 @@ var Carousel = React.createClass({
         continue;
       }
 
-      style = i === this.state.activePage ? { color: this.props.indicatorColor } : { color: this.props.inactiveIndicatorColor };
+      style = i === this.state.activePage
+        ? this.props.indicatorStyle
+        : this.props.inactiveIndicatorStyle;
       indicators.push(
-         <Text
-            style={[style, { fontSize: this.props.indicatorSize }]}
-            key={i}
-            onPress={this.indicatorPressed.bind(this,i)}
+        <Text
+          style={style}
+          key={i}
+          onPress={this.scrollTo.bind(this,i)}
           >
-             { i === this.state.activePage  ? this.props.indicatorText : this.props.inactiveIndicatorText }
-          </Text>
+          { i === this.state.activePage ? this.props.indicatorText : this.props.inactiveIndicatorText }
+        </Text>
       );
     }
 
@@ -98,36 +114,110 @@ var Carousel = React.createClass({
     }
 
     return (
-      <View style={[styles.pageIndicator, position, indicatorStyle]}>
+      <View style={[styles.indicator, position, indicatorStyle]}>
         {indicators}
       </View>
     );
   },
 
+  renderLeftArrow() {
+    if (this.props.children.length < 2) return null;
+
+    var {
+      leftArrow,
+      arrowsAtBottom,
+      arrowsVerticalOffset,
+      arrowsHorizontalOffset,
+      children,
+      loop
+    } = this.props;
+
+    var { activePage } = this.state;
+
+    var prev = activePage - 1;
+
+    var onPress;
+    if (prev >= 0) {
+      onPress = () => this.scrollTo(prev);
+    } else {
+      onPress = loop
+        ? () => this.scrollTo(children.length - 1)
+        : () => null;
+    }
+
+    var arrowsVerticalStyle = arrowsAtBottom ? { bottom: arrowsVerticalOffset } :  { top: arrowsVerticalOffset }
+    var arrowHorizontalStyle = { left: arrowsHorizontalOffset }
+
+    return (
+      <View style={[styles.leftArrow, arrowsVerticalStyle, arrowHorizontalStyle]}>
+        <TouchableOpacity onPress={onPress}>
+          {this.wrapArrow(leftArrow)}
+        </TouchableOpacity>
+      </View>
+    );
+  },
+
+  renderRightArrow() {
+    if (this.props.children.length < 2) return null;
+
+    var {
+      rightArrow,
+      arrowsAtBottom,
+      arrowsVerticalOffset,
+      arrowsHorizontalOffset,
+      children,
+      loop
+    } = this.props;
+
+    var { activePage } = this.state;
+
+    var next = activePage + 1;
+
+    var onPress;
+    if (next < children.length) {
+      onPress = () => this.scrollTo(next);
+    } else {
+      onPress = loop
+        ? () => this.scrollTo(0)
+        : () => null;
+    }
+
+    var arrowsVerticalStyle = arrowsAtBottom ? { bottom: arrowsVerticalOffset } :  { top: arrowsVerticalOffset }
+    var arrowHorizontalStyle = { right: arrowsHorizontalOffset }
+
+    return (
+      <View style={[styles.rightArrow, arrowsVerticalStyle, arrowHorizontalStyle]}>
+        <TouchableOpacity onPress={onPress}>
+          {this.wrapArrow(rightArrow)}
+        </TouchableOpacity>
+      </View>
+    );
+  },
+
   _setUpTimer() {
-     if (this.props.children.length > 1) {
-         this.clearTimeout(this.timer);
-         this.timer = this.setTimeout(this._animateNextPage, this.props.delay);
-     }
+    if (this.props.children.length > 1) {
+      this.clearTimeout(this.timer);
+      this.timer = this.setTimeout(this._animateNextPage, this.props.delay);
+    }
   },
 
   _animateNextPage() {
-     var activePage = 0;
-     if (this.state.activePage < this.props.children.length - 1) {
-         activePage = this.state.activePage + 1;
-     } else if (!this.props.loop) {
-         return;
-     }
+    var activePage = 0;
+    if (this.state.activePage < this.props.children.length - 1) {
+      activePage = this.state.activePage + 1;
+    } else if (!this.props.loop) {
+      return;
+    }
 
-     this.indicatorPressed(activePage);
-     this._setUpTimer();
+    this.scrollTo(activePage);
+    this._setUpTimer();
   },
 
   _onAnimationBegin() {
-     this.clearTimeout(this.timer);
-     if (this.props.onBeginPageChange) {
-       this.props.onBeginPageChange();
-     }
+    this.clearTimeout(this.timer);
+    if (this.props.onBeginPageChange) {
+      this.props.onBeginPageChange();
+    }
   },
 
   _onAnimationEnd(activePage) {
@@ -150,22 +240,12 @@ var Carousel = React.createClass({
           {this.props.children}
         </CarouselPager>
         {this.renderPageIndicator()}
+        {this.renderLeftArrow()}
+        {this.renderRightArrow()}
       </View>
     );
   },
 
-});
-
-var styles = StyleSheet.create({
-  pageIndicator: {
-    position: 'absolute',
-    flexDirection: 'row',
-    flex: 1,
-    justifyContent: 'space-around',
-    alignItems: 'center',
-    alignSelf: 'center',
-    backgroundColor:'transparent',
-  },
 });
 
 module.exports = Carousel;
