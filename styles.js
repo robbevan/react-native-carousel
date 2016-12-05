@@ -31,4 +31,7 @@ module.exports = StyleSheet.create({
     position: 'absolute',
     right: 0
   },
+  disabledArrow: {
+    opacity: 0.2,
+  }
 });

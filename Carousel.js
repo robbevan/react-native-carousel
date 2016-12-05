@@ -136,21 +136,22 @@ var Carousel = React.createClass({
 
     var prev = activePage - 1;
 
-    var onPress;
+    var onPress, isDisabled;
+
     if (prev >= 0) {
+      isDisabled = false;
       onPress = () => this.scrollTo(prev);
     } else {
-      onPress = loop
-        ? () => this.scrollTo(children.length - 1)
-        : () => null;
+      isDisabled = true;
+      onPress = null;
     }
 
-    var arrowsVerticalStyle = arrowsAtBottom ? { bottom: arrowsVerticalOffset } :  { top: arrowsVerticalOffset }
-    var arrowHorizontalStyle = { left: arrowsHorizontalOffset }
+    var arrowsVerticalStyle = arrowsAtBottom ? { bottom: arrowsVerticalOffset } :  { top: arrowsVerticalOffset };
+    var arrowHorizontalStyle = { left: arrowsHorizontalOffset };
 
     return (
-      <View style={[styles.leftArrow, arrowsVerticalStyle, arrowHorizontalStyle]}>
-        <TouchableOpacity onPress={onPress}>
+      <View style={[styles.leftArrow, arrowsVerticalStyle, arrowHorizontalStyle, (isDisabled ? styles.disabledArrow : {})]}>
+        <TouchableOpacity onPress={onPress} disabled={isDisabled}>
           {this.wrapArrow(leftArrow)}
         </TouchableOpacity>
       </View>
@@ -159,7 +160,6 @@ var Carousel = React.createClass({
 
   renderRightArrow() {
     if (this.props.children.length < 2) return null;
-
     var {
       rightArrow,
       arrowsAtBottom,
@@ -173,21 +173,22 @@ var Carousel = React.createClass({
 
     var next = activePage + 1;
 
-    var onPress;
+    var onPress, isDisabled;
+
     if (next < children.length) {
+      isDisabled = false;
       onPress = () => this.scrollTo(next);
     } else {
-      onPress = loop
-        ? () => this.scrollTo(0)
-        : () => null;
+      isDisabled = true;
+      onPress = null;
     }
 
-    var arrowsVerticalStyle = arrowsAtBottom ? { bottom: arrowsVerticalOffset } :  { top: arrowsVerticalOffset }
-    var arrowHorizontalStyle = { right: arrowsHorizontalOffset }
+    var arrowsVerticalStyle = arrowsAtBottom ? { bottom: arrowsVerticalOffset } :  { top: arrowsVerticalOffset };
+    var arrowHorizontalStyle = { right: arrowsHorizontalOffset };
 
     return (
-      <View style={[styles.rightArrow, arrowsVerticalStyle, arrowHorizontalStyle]}>
-        <TouchableOpacity onPress={onPress}>
+      <View style={[styles.rightArrow, arrowsVerticalStyle, arrowHorizontalStyle, (isDisabled ? styles.disabledArrow : {})]}>
+        <TouchableOpacity onPress={onPress} disabled={isDisabled}>
           {this.wrapArrow(rightArrow)}
         </TouchableOpacity>
       </View>
